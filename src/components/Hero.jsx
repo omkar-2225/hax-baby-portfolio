@@ -140,27 +140,41 @@ export default function Hero({ onTriggerEasterEgg, onReplayIntro }) {
           </div>
         </div>
 
-        {/* Right Column: 3D Interactive Pip Character Card */}
-        <div className="hero-card-col animate-scroll-up" style={{ animationDelay: '0.2s' }}>
+        {/* Right Column: Organic Floating Pip Character (No Boxy Card) */}
+        <div className="hero-floating-pip-col animate-scroll-up" style={{ animationDelay: '0.2s' }}>
           <div
             ref={cardRef}
-            className={`pip-3d-card ${isNodding ? 'pip-nod' : ''}`}
+            className={`floating-pip-stage ${isNodding ? 'pip-nod' : ''}`}
             style={{
               transform: `perspective(1000px) rotateX(${tilt.x}deg) rotateY(${tilt.y}deg)`,
               transition: 'transform 0.15s ease-out',
             }}
             onClick={handlePipClick}
             title="Click Pip for a gentle giggle & stardust!"
+            role="button"
+            tabIndex={0}
+            aria-label="Interactive floating Pip character"
+            onKeyDown={(e) => e.key === 'Enter' && handlePipClick()}
           >
-            {/* Card Floating Glow & Accents */}
-            <div className="card-glow" />
-            <div className="card-halo-stars">
-              <span className="halo-star h1">✦</span>
-              <span className="halo-star h2">★</span>
-              <span className="halo-star h3">✧</span>
+            {/* Ambient Aura Halo behind Pip */}
+            <div className="pip-halo-aura" aria-hidden="true" />
+
+            {/* Orbiting Stardust Stars */}
+            <div className="pip-orbit-stars" aria-hidden="true">
+              <span className="orbit-star os-1">✦</span>
+              <span className="orbit-star os-2">★</span>
+              <span className="orbit-star os-3">✧</span>
+              <span className="orbit-star os-4">⋆</span>
+              <span className="orbit-star os-5">♡</span>
             </div>
 
-            {/* Official Pip Avatar Cloud Render */}
+            {/* Cute Floating Thought / Poke Bubble */}
+            <div className="pip-thought-bubble">
+              <Sparkles size={14} style={{ color: '#ffd166' }} />
+              <span>Poke me to giggle! ✨</span>
+            </div>
+
+            {/* Pip Character Render & Eyes */}
             <div className="pip-character-stage">
               <img
                 src="/pip_avatar_cloud.png"
@@ -198,16 +212,13 @@ export default function Hero({ onTriggerEasterEgg, onReplayIntro }) {
               </button>
             </div>
 
-            {/* Interactive Card Footer Badge */}
-            <div className="card-footer-ribbon">
-              <div className="status-indicator">
-                <span className="status-ping" />
-                <span>Status: Currently Dreaming (92% Deep Sleep)</span>
-              </div>
-              <p className="card-hint">
-                <Sparkles size={13} style={{ display: 'inline', marginRight: '4px' }} />
-                Move mouse to tilt 3D card & guide Pip's eyes
-              </p>
+            {/* Breathing Cloud Shadow Underneath */}
+            <div className="pip-cloud-shadow" aria-hidden="true" />
+
+            {/* Floating Status Pill */}
+            <div className="pip-floating-status">
+              <span className="status-ping" />
+              <span>Currently Dreaming · 92% Deep Sleep</span>
             </div>
           </div>
         </div>

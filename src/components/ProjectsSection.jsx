@@ -1,24 +1,17 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { sound } from '../audio/soundEffects';
 import DreamDeliveryMap from './DreamDeliveryMap';
 import DreamCatcherGame from './DreamCatcherGame';
 import {
   Music,
   Lightbulb,
-  MapPin,
   Sparkles,
   Volume2,
   VolumeX,
   Play,
   Square,
-  Flame,
-  Moon,
-  Sun,
-  Layers,
-  Heart,
   Compass,
 } from 'lucide-react';
-import confetti from 'canvas-confetti';
 
 export default function ProjectsSection({ isMuted, onToggleMute }) {
   // --- Project 1: Lullaby Lab State ---
