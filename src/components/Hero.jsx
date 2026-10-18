@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { sound } from '../audio/soundEffects';
-import { Sparkles, Moon, Heart, Compass, Volume2, Stars, Play } from 'lucide-react';
+import { Sparkles, Moon, Heart, Compass, Volume2 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
 export default function Hero({ onTriggerEasterEgg, onReplayIntro }) {
@@ -37,7 +37,8 @@ export default function Hero({ onTriggerEasterEgg, onReplayIntro }) {
   }, []);
 
   const handlePipClick = () => {
-    sound.playChime(1.2);
+    // Play baby giggle voice when Pip is tapped / clicked
+    sound.playBabyGiggle();
     setIsNodding(true);
     setTimeout(() => setIsNodding(false), 800);
     try {

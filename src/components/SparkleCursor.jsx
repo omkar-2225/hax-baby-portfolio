@@ -21,14 +21,13 @@ export default function SparkleCursor({ enabled = true }) {
     const symbols = ['✦', '★', '✧', '⋆', '♡', '•'];
     const colors = ['#ffd166', '#ff99c8', '#a9def9', '#fcf6bd', '#ffcad4', '#ffffff'];
 
-    const handleMouseMove = (e) => {
-      // Spawn 2-3 sparkle particles
+    const spawnAt = (clientX, clientY) => {
       for (let i = 0; i < 2; i++) {
         particles.push({
-          x: e.clientX + (Math.random() - 0.5) * 12,
-          y: e.clientY + (Math.random() - 0.5) * 12,
+          x: clientX + (Math.random() - 0.5) * 12,
+          y: clientY + (Math.random() - 0.5) * 12,
           vx: (Math.random() - 0.5) * 1.5,
-          vy: (Math.random() - 0.5) * 1.5 - 0.8, // gentle upward drift
+          vy: (Math.random() - 0.5) * 1.5 - 0.8,
           size: 10 + Math.random() * 12,
           alpha: 1,
           decay: 0.025 + Math.random() * 0.02,
@@ -40,7 +39,19 @@ export default function SparkleCursor({ enabled = true }) {
       }
     };
 
-    window.addEventListener('mousemove', handleMouseMove);
+    const handleMouseMove = (e) => {
+      spawnAt(e.clientX, e.clientY);
+    };
+
+    const handleTouch = (e) => {
+      if (e.touches && e.touches.length > 0) {
+        spawnAt(e.touches[0].clientX, e.touches[0].clientY);
+      }
+    };
+
+    window.addEventListener('mousemove', handleMouseMove, { passive: true });
+    window.addEventListener('touchstart', handleTouch, { passive: true });
+    window.addEventListener('touchmove', handleTouch, { passive: true });
 
     const render = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -78,6 +89,8 @@ export default function SparkleCursor({ enabled = true }) {
       cancelAnimationFrame(animId);
       window.removeEventListener('resize', resize);
       window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('touchstart', handleTouch);
+      window.removeEventListener('touchmove', handleTouch);
     };
   }, [enabled]);
 

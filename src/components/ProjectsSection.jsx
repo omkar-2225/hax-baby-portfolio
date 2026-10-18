@@ -1,5 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { sound } from '../audio/soundEffects';
+import DreamDeliveryMap from './DreamDeliveryMap';
+import DreamCatcherGame from './DreamCatcherGame';
 import {
   Music,
   Lightbulb,
@@ -53,8 +55,82 @@ export default function ProjectsSection({ isMuted, onToggleMute }) {
     }
   };
 
+  // Waveform Visualizer — canvas-drawn real-time oscilloscope
+  const vizCanvasRef = useRef(null);
+  const vizRafRef = useRef(null);
+  const vizAnimating = useRef(false);
+  const vizPhase = useRef(0);
+  const vizTargetNote = useRef(440);
+
+  const drawViz = useCallback(() => {
+    const canvas = vizCanvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const W = canvas.width;
+    const H = canvas.height;
+    ctx.clearRect(0, 0, W, H);
+
+    if (!vizAnimating.current) {
+      ctx.strokeStyle = 'rgba(163, 64, 99, 0.25)';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(0, H / 2);
+      ctx.lineTo(W, H / 2);
+      ctx.stroke();
+      return;
+    }
+
+    vizPhase.current += 0.06;
+    const speed = vizTargetNote.current / 440;
+
+    const grad = ctx.createLinearGradient(0, 0, W, 0);
+    grad.addColorStop(0, '#ff99c8');
+    grad.addColorStop(0.5, '#c77dff');
+    grad.addColorStop(1, '#ffd166');
+    ctx.strokeStyle = grad;
+    ctx.lineWidth = 2;
+    ctx.shadowBlur = 8;
+    ctx.shadowColor = '#c77dff';
+
+    ctx.beginPath();
+    for (let x = 0; x < W; x++) {
+      const t = x / W;
+      const amp = H * 0.38;
+      const y = H / 2
+        + amp * 0.6 * Math.sin(t * Math.PI * 8 * speed + vizPhase.current)
+        + amp * 0.25 * Math.sin(t * Math.PI * 16 * speed + vizPhase.current * 1.3)
+        + amp * 0.12 * Math.sin(t * Math.PI * 4 * speed + vizPhase.current * 0.7);
+      x === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+
+    vizRafRef.current = requestAnimationFrame(drawViz);
+  }, []);
+
+  useEffect(() => {
+    vizAnimating.current = isPlayingLullaby;
+    if (isPlayingLullaby) {
+      drawViz();
+    } else {
+      cancelAnimationFrame(vizRafRef.current);
+      drawViz();
+    }
+  }, [isPlayingLullaby, drawViz]);
+
+  useEffect(() => {
+    const noteFreqMap = {
+      C5: 523.25, D5: 587.33, E5: 659.25, G5: 783.99,
+      A5: 880, C6: 1046.5, D6: 1174.66, E6: 1318.51,
+    };
+    if (activeNote && noteFreqMap[activeNote]) {
+      vizTargetNote.current = noteFreqMap[activeNote];
+    }
+  }, [activeNote]);
+
   useEffect(() => {
     return () => {
+      cancelAnimationFrame(vizRafRef.current);
       sound.stopMelody();
     };
   }, []);
@@ -71,50 +147,6 @@ export default function ProjectsSection({ isMuted, onToggleMute }) {
     { name: 'Cotton Candy', color: '#ff85a1' },
   ];
 
-  // --- Project 3: Dream Delivery Routes State ---
-  const [selectedRoute, setSelectedRoute] = useState(0);
-  const routeStops = [
-    {
-      id: 0,
-      name: 'Midnight Nursery Hub',
-      time: '20:00',
-      description: 'Pip mixes freshly gathered moonbeams, warm milk bubbles, and sugar clouds into dream flasks.',
-      type: 'Prep Station',
-      icon: '🍼',
-    },
-    {
-      id: 1,
-      name: 'Ghost Alley Roost',
-      time: '21:30',
-      description: 'Delivering soft whisper dreams and warm wool sweaters for shy baby phantoms who fear thunder.',
-      type: 'Whisper Dreams',
-      icon: '👻',
-    },
-    {
-      id: 2,
-      name: 'Bunny Burrows',
-      time: '23:00',
-      description: 'Tucking sleepy rabbits into clover beds with chamomile mist and sweet honey lullabies.',
-      type: 'Nature Dreams',
-      icon: '🐰',
-    },
-    {
-      id: 3,
-      name: 'Cloud Spire Peaks',
-      time: '01:15',
-      description: 'High-altitude floating delivery of zero-gravity flying sensation dreams for daydreamers.',
-      type: 'Soaring Dreams',
-      icon: '☁️',
-    },
-    {
-      id: 4,
-      name: 'Slumber Haven Citadel',
-      time: '03:45',
-      description: 'Final stop delivering 8 continuous hours of peaceful, nightmare-free regenerative rest.',
-      type: 'Deep Rest',
-      icon: '🏰',
-    },
-  ];
 
   // --- Project 4: Rattle Toy Blocks State ---
   const [blocks, setBlocks] = useState([
@@ -233,6 +265,24 @@ export default function ProjectsSection({ isMuted, onToggleMute }) {
                   ))}
                 </div>
               </div>
+
+              {/* Tier 2: Real-Time Waveform Visualizer */}
+              <div className="lullaby-visualizer-wrap">
+                <span className="lullaby-visualizer-label">🎵 Live Waveform</span>
+                <canvas
+                  ref={vizCanvasRef}
+                  className="lullaby-visualizer-canvas"
+                  width={400}
+                  height={56}
+                  aria-label="Real-time audio waveform visualizer"
+                />
+                {activeNote && (
+                  <div className="lullaby-active-note-badge" key={activeNote}>
+                    <span className="note-badge-dot" />
+                    <span>Playing: {activeNote}</span>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
@@ -330,54 +380,13 @@ export default function ProjectsSection({ isMuted, onToggleMute }) {
           </div>
         </div>
 
-        {/* ================= PROJECT 3: DREAM DELIVERY ROUTES ================= */}
+        {/* ================= PROJECT 3: DREAM DELIVERY MAP (Tier 2 SVG Animation) ================= */}
         <div id="delivery-routes" className="project-card">
           <div className="project-badge">
             <Compass size={15} />
             <span>Showcase 03 · Interactive Rooftop Flight Route</span>
           </div>
-
-          <div className="route-interactive-wrap">
-            <div className="route-header">
-              <h3 className="project-name">Dream Delivery Route Map</h3>
-              <p className="project-desc">
-                Every night at 20:00 IST, Pip boards a puffy cumulus cloud to drop custom-crafted
-                dreams into chimneys and open windows across the neighborhood.
-              </p>
-            </div>
-
-            {/* Route Stops Ribbon */}
-            <div className="route-timeline">
-              {routeStops.map((stop, idx) => (
-                <button
-                  key={stop.id}
-                  type="button"
-                  className={`route-node ${selectedRoute === idx ? 'route-node-active' : ''}`}
-                  onClick={() => {
-                    sound.playPop();
-                    setSelectedRoute(idx);
-                  }}
-                >
-                  <span className="node-icon">{stop.icon}</span>
-                  <span className="node-time">{stop.time}</span>
-                  <span className="node-name">{stop.name}</span>
-                </button>
-              ))}
-            </div>
-
-            {/* Selected Route Info Card */}
-            <div className="route-detail-card">
-              <div className="detail-tag">{routeStops[selectedRoute].type}</div>
-              <h4>
-                {routeStops[selectedRoute].icon} {routeStops[selectedRoute].name}
-              </h4>
-              <p>{routeStops[selectedRoute].description}</p>
-              <div className="detail-meta">
-                <span>📍 Dispatch Status: On Schedule</span>
-                <span>🌙 Cloud Speed: Gentle 8 Knots</span>
-              </div>
-            </div>
-          </div>
+          <DreamDeliveryMap />
         </div>
 
         {/* ================= PROJECT 4 & 5: RATTLE TOYS & GROWTH CHART ================= */}
@@ -460,6 +469,11 @@ export default function ProjectsSection({ isMuted, onToggleMute }) {
               </div>
             </div>
           </div>
+        </div>
+
+        {/* ================= TIER 2 MINI-GAME: DREAM CATCHER ================= */}
+        <div id="dream-catcher" className="project-card">
+          <DreamCatcherGame />
         </div>
       </div>
     </section>

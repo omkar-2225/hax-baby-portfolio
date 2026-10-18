@@ -146,11 +146,11 @@ export default function ThreeBackground({ isNight = true }) {
 
     // 6. Animation loop
     let animId;
-    let clock = new THREE.Clock();
+    const startTime = performance.now();
 
     const animate = () => {
       animId = requestAnimationFrame(animate);
-      const elapsedTime = clock.getElapsedTime();
+      const elapsedTime = (performance.now() - startTime) * 0.001;
 
       // Smooth camera lerp for gentle 3D depth
       targetX += (mouseX - targetX) * 0.05;

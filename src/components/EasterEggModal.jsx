@@ -6,7 +6,7 @@ import confetti from 'canvas-confetti';
 export default function EasterEggModal({ isOpen, onClose }) {
   useEffect(() => {
     if (isOpen) {
-      sound.playChime(1.4);
+      sound.playBabySurprise();
       try {
         confetti({
           particleCount: 100,
