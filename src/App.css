@@ -2347,10 +2347,15 @@
    ===================================================================== */
 
 /* ─────────────────────────────────────────────
-   1. FLASHLIGHT / NIGHTLIGHT CURSOR (Bug 4: No dimming overlay)
+   1. FLASHLIGHT / NIGHTLIGHT CURSOR
    ───────────────────────────────────────────── */
 .flashlight-overlay {
-  display: none !important;
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9998;
+  transition: background 0.05s linear;
+  mix-blend-mode: multiply;
 }
 
 .flashlight-inner-glow {

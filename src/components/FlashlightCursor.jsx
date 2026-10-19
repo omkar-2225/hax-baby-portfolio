@@ -106,7 +106,19 @@ export default function FlashlightCursor({ isNight, enabled }) {
 
   return (
     <>
-      {/* Soft ambient lantern aura following cursor without dimming page text */}
+      {/* Restored Flashlight Spotlight Overlay */}
+      <div
+        className="flashlight-overlay"
+        aria-hidden="true"
+        style={{
+          background: `radial-gradient(
+            circle 220px at ${smoothPos.x}px ${smoothPos.y}px,
+            transparent 0%,
+            transparent 120px,
+            rgba(8, 6, 22, 0.72) 220px
+          )`,
+        }}
+      />
       <div
         className="flashlight-inner-glow"
         aria-hidden="true"
