@@ -7,7 +7,7 @@ import VisitorMemoryBadge from './VisitorMemoryBadge';
 
 export default function Hero({ onTriggerEasterEgg, onReplayIntro, isNight = true }) {
   const cardRef = useRef(null);
-  const [characterMode, setCharacterMode] = useState('3d'); // '3d' | '2d'
+  const [characterMode, setCharacterMode] = useState('3d-model'); // '3d-model' | '3d-video' | '2d'
   const [tilt, setTilt] = useState({ x: 0, y: 0 });
   const [eyeOffset, setEyeOffset] = useState({ x: 0, y: 0 });
   const [isNodding, setIsNodding] = useState(false);
@@ -147,38 +147,68 @@ export default function Hero({ onTriggerEasterEgg, onReplayIntro, isNight = true
 
         {/* Right Column: Character Stage (Interactive 3D WebGL vs Storybook Portrait) */}
         <div className="hero-floating-pip-col animate-scroll-up" style={{ animationDelay: '0.2s' }}>
-          {/* Mode Switcher: 3D Three.js Model vs Storybook Art */}
-          <div className="character-mode-toggle-bar">
-            <button
-              type="button"
-              className={`mode-toggle-btn ${characterMode === '3d' ? 'mode-active' : ''}`}
-              onClick={() => {
-                sound.playPop();
-                setCharacterMode('3d');
-              }}
-              title="Rotate and inspect Pip in full 3D WebGL Three.js!"
-            >
-              <Box size={14} />
-              <span>3D WebGL Model (Rotate 360°)</span>
-            </button>
+          {/* Unified Hero Model Segmented Control (Bug 2: Rebuilt clean control, min 44px targets) */}
+          <div className="hero-segmented-control-wrap" role="toolbar" aria-label="Pip character view options">
+            <div className="hero-segmented-control">
+              <button
+                type="button"
+                className={`segmented-tab-btn ${characterMode === '3d-model' ? 'tab-active' : ''}`}
+                onClick={() => {
+                  sound.playPop();
+                  setCharacterMode('3d-model');
+                }}
+                aria-pressed={characterMode === '3d-model'}
+                title="Rotate and inspect Pip in full 3D (360°)"
+              >
+                <Box size={15} />
+                <span>3D Model</span>
+              </button>
 
-            <button
-              type="button"
-              className={`mode-toggle-btn ${characterMode === '2d' ? 'mode-active' : ''}`}
-              onClick={() => {
-                sound.playPop();
-                setCharacterMode('2d');
-              }}
-              title="Switch to storybook illustrated portrait"
-            >
-              <ImageIcon size={14} />
-              <span>Portrait Art</span>
-            </button>
+              <button
+                type="button"
+                className={`segmented-tab-btn ${characterMode === '3d-video' ? 'tab-active' : ''}`}
+                onClick={() => {
+                  sound.playPop();
+                  setCharacterMode('3d-video');
+                }}
+                aria-pressed={characterMode === '3d-video'}
+                title="Watch Pip's live 3D animation video"
+              >
+                <Sparkles size={15} />
+                <span>Live 3D Video</span>
+              </button>
+
+              <button
+                type="button"
+                className={`segmented-tab-btn ${characterMode === '2d' ? 'tab-active' : ''}`}
+                onClick={() => {
+                  sound.playPop();
+                  setCharacterMode('2d');
+                }}
+                aria-pressed={characterMode === '2d'}
+                title="Switch to storybook illustrated portrait"
+              >
+                <ImageIcon size={15} />
+                <span>Portrait Art</span>
+              </button>
+
+              <button
+                type="button"
+                className="segmented-tab-btn btn-poke-giggle"
+                onClick={handlePipClick}
+                title="Poke Pip to giggle and toss star confetti!"
+                aria-label="Poke Pip to giggle"
+              >
+                <Heart size={15} className="heart-icon-beat" />
+                <span>Poke to Giggle ✨</span>
+              </button>
+            </div>
           </div>
 
-          {/* 3D WebGL Three.js Model View */}
-          {characterMode === '3d' ? (
+          {/* 3D WebGL / Live Video Three.js Model View */}
+          {characterMode === '3d-model' || characterMode === '3d-video' ? (
             <ThreePipCharacter
+              viewMode={characterMode === '3d-video' ? 'video' : 'model'}
               isNight={isNight}
               onPipTickle={handlePipClick}
             />

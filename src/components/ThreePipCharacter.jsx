@@ -1,5 +1,4 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
-import * as THREE from 'three';
 import { sound } from '../audio/soundEffects';
 import {
   RotateCw,
@@ -7,9 +6,6 @@ import {
   ZoomIn,
   ZoomOut,
   RefreshCw,
-  Film,
-  Box,
-  Compass,
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
@@ -17,12 +13,11 @@ const TOTAL_FRAMES = 60;
 const FRONT_FRAME_INDEX = 38; // Pip faces directly forward at frame 38
 
 export default function ThreePipCharacter({
+  viewMode = 'model', // 'model' (360° Turntable) | 'video' (Live 3D Video)
   isNight = true,
   onPipTickle,
   className = '',
 }) {
-  // Viewer sub-modes: 'model' (360° Turntable from video with bg removed), 'video' (Live video with real-time chromakey bg removal), 'procedural' (Three.js WebGL mesh)
-  const [viewMode, setViewMode] = useState('model');
   const [currentFrame, setCurrentFrame] = useState(FRONT_FRAME_INDEX);
   const [autoRotate, setAutoRotate] = useState(true);
   const [zoomScale, setZoomScale] = useState(1.0);
@@ -39,12 +34,7 @@ export default function ThreePipCharacter({
   const isDraggingRef = useRef(false);
   const dragStartXRef = useRef(0);
   const startFrameRef = useRef(FRONT_FRAME_INDEX);
-  const animFrameIdRef = useRef(null);
   const lastAutoStepTimeRef = useRef(0);
-
-  // Procedural Three.js Canvas Reference
-  const proceduralMountRef = useRef(null);
-  const threeSceneRef = useRef(null);
 
   // 1. Preload 60 transparent WebP frames for instantaneous 360° rotation
   useEffect(() => {
@@ -56,7 +46,7 @@ export default function ThreePipCharacter({
       img.src = `/pip3d/frame_${String(i).padStart(2, '0')}.webp`;
       img.onload = () => {
         loadedCount++;
-        if (loadedCount >= 10) {
+        if (loadedCount >= 8) {
           setIsLoaded(true);
         }
       };
@@ -65,72 +55,89 @@ export default function ThreePipCharacter({
     imagesRef.current = imgs;
   }, []);
 
-  // 2. Draw current 3D frame to canvas with high DPI and smooth scaling
+  // 2. Draw current 3D frame to canvas with crisp high DPI
   const drawFrame = useCallback((frameIdx) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext('2d', { alpha: true });
     const img = imagesRef.current[frameIdx];
 
     if (!img || !img.complete) return;
 
-    // High DPI setup
+    // High DPI crisp resolution setup
     const rect = canvas.getBoundingClientRect();
-    const dpr = window.devicePixelRatio || 1;
-    if (canvas.width !== rect.width * dpr || canvas.height !== rect.height * dpr) {
-      canvas.width = rect.width * dpr;
-      canvas.height = rect.height * dpr;
+    if (rect.width === 0 || rect.height === 0) return;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2.5);
+    const targetW = Math.round(rect.width * dpr);
+    const targetH = Math.round(rect.height * dpr);
+
+    if (canvas.width !== targetW || canvas.height !== targetH) {
+      canvas.width = targetW;
+      canvas.height = targetH;
     }
 
     ctx.save();
     ctx.scale(dpr, dpr);
     ctx.clearRect(0, 0, rect.width, rect.height);
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
 
     // Compute aspect-fit dimensions with zoomScale
     const imgW = img.naturalWidth || 452;
     const imgH = img.naturalHeight || 500;
-    const scale = Math.min((rect.width * 0.88) / imgW, (rect.height * 0.88) / imgH) * zoomScale;
+    const scale = Math.min((rect.width * 0.85) / imgW, (rect.height * 0.85) / imgH) * zoomScale;
 
     const drawW = imgW * scale;
     const drawH = imgH * scale;
     const drawX = (rect.width - drawW) / 2;
-    const drawY = (rect.height - drawH) / 2 + 10;
+    const drawY = (rect.height - drawH) / 2 + 6;
 
-    // Draw ambient stardust glow under Pip
+    // Ambient stardust aura under Pip
     const glowGrad = ctx.createRadialGradient(
       rect.width / 2,
-      drawY + drawH * 0.85,
-      10,
+      drawY + drawH * 0.86,
+      8,
       rect.width / 2,
-      drawY + drawH * 0.85,
-      drawW * 0.5
+      drawY + drawH * 0.86,
+      drawW * 0.48
     );
-    glowGrad.addColorStop(0, 'rgba(255, 209, 102, 0.25)');
+    glowGrad.addColorStop(0, 'rgba(255, 209, 102, 0.28)');
     glowGrad.addColorStop(0.5, 'rgba(255, 112, 166, 0.12)');
     glowGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
     ctx.fillStyle = glowGrad;
     ctx.beginPath();
-    ctx.ellipse(rect.width / 2, drawY + drawH * 0.85, drawW * 0.45, drawH * 0.14, 0, 0, Math.PI * 2);
+    ctx.ellipse(rect.width / 2, drawY + drawH * 0.86, drawW * 0.44, drawH * 0.13, 0, 0, Math.PI * 2);
     ctx.fill();
 
-    // Draw the transparent 3D model frame
+    // Draw the crisp transparent 3D model frame
     ctx.drawImage(img, drawX, drawY, drawW, drawH);
     ctx.restore();
   }, [zoomScale]);
 
-  // Redraw when currentFrame or zoom changes
+  // Redraw when currentFrame, zoom, or viewMode changes
   useEffect(() => {
     if (viewMode === 'model') {
       drawFrame(currentFrame);
     }
   }, [currentFrame, drawFrame, viewMode, isLoaded]);
 
+  // Handle window resize for canvas redraw
+  useEffect(() => {
+    const handleResize = () => {
+      if (viewMode === 'model') {
+        drawFrame(currentFrame);
+      }
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [currentFrame, drawFrame, viewMode]);
+
   // 3. Auto-spin rotation loop (smooth 360° rotation)
   useEffect(() => {
     if (!autoRotate || isDraggingRef.current || viewMode !== 'model') return;
 
     let animId;
-    const stepIntervalMs = 65; // ~15 FPS rotation step, smooth & gentle
+    const stepIntervalMs = 65; // ~15 FPS rotation step, buttery smooth
 
     const loop = (timestamp) => {
       if (!lastAutoStepTimeRef.current) lastAutoStepTimeRef.current = timestamp;
@@ -159,11 +166,18 @@ export default function ThreePipCharacter({
     const ctx = canvas.getContext('2d', { willReadFrequently: true });
 
     const processFrame = () => {
-      if (video.readyState >= 2) {
-        const w = canvas.width;
-        const h = canvas.height;
-        ctx.drawImage(video, 0, 0, w, h);
+      if (video.readyState >= 2 && !video.paused) {
+        const rect = canvas.getBoundingClientRect();
+        const dpr = Math.min(window.devicePixelRatio || 1, 2);
+        const w = Math.round(rect.width * dpr) || 452;
+        const h = Math.round(rect.height * dpr) || 500;
 
+        if (canvas.width !== w || canvas.height !== h) {
+          canvas.width = w;
+          canvas.height = h;
+        }
+
+        ctx.drawImage(video, 0, 0, w, h);
         const imgData = ctx.getImageData(0, 0, w, h);
         const data = imgData.data;
         const len = data.length;
@@ -215,16 +229,16 @@ export default function ThreePipCharacter({
       const dx = (clientX - (rect.left + rect.width / 2)) / (rect.width / 2);
       const dy = (clientY - (rect.top + rect.height / 2)) / (rect.height / 2);
       setTilt({
-        x: Math.max(Math.min(-dy * 8, 8), -8),
-        y: Math.max(Math.min(dx * 8, 8), -8),
+        x: Math.max(Math.min(-dy * 6, 6), -6),
+        y: Math.max(Math.min(dx * 6, 6), -6),
       });
     }
 
     if (!isDraggingRef.current || clientX === undefined) return;
 
     const deltaX = clientX - dragStartXRef.current;
-    // Every 8 pixels dragged moves 1 frame (6 degrees)
-    const framesMoved = Math.round(deltaX / 8);
+    // Every 7 pixels dragged moves 1 frame (6 degrees)
+    const framesMoved = Math.round(deltaX / 7);
     let nextFrame = (startFrameRef.current + framesMoved) % TOTAL_FRAMES;
     if (nextFrame < 0) nextFrame += TOTAL_FRAMES;
 
@@ -243,8 +257,8 @@ export default function ThreePipCharacter({
 
     try {
       confetti({
-        particleCount: 40,
-        spread: 65,
+        particleCount: 35,
+        spread: 60,
         origin: { y: 0.45 },
         colors: ['#ffd166', '#ff99c8', '#a34063'],
       });
@@ -256,7 +270,7 @@ export default function ThreePipCharacter({
   // Zoom controls
   const handleZoomChange = (delta) => {
     sound.playPop();
-    setZoomScale((prev) => Math.max(Math.min(prev + delta, 1.45), 0.75));
+    setZoomScale((prev) => Math.max(Math.min(prev + delta, 1.35), 0.78));
   };
 
   const handleResetView = () => {
@@ -271,41 +285,77 @@ export default function ThreePipCharacter({
 
   return (
     <div className={`three-pip-container ${className}`} ref={containerRef}>
-      {/* 3D Mode Selector Header: Turntable vs Live Video vs Procedural */}
-      <div className="pip-submode-bar">
-        <button
-          type="button"
-          className={`submode-pill ${viewMode === 'model' ? 'submode-active' : ''}`}
-          onClick={() => {
-            sound.playPop();
-            setViewMode('model');
-          }}
-          title="Pip 3D model with background removed and 360° turntable control"
-        >
-          <Box size={13} />
-          <span>3D Model (Turntable 360°)</span>
-        </button>
-
-        <button
-          type="button"
-          className={`submode-pill ${viewMode === 'video' ? 'submode-active' : ''}`}
-          onClick={() => {
-            sound.playPop();
-            setViewMode('video');
-          }}
-          title="Play 3D model video with real-time chroma-key background removal"
-        >
-          <Film size={13} />
-          <span>Live 3D Video (Clean BG)</span>
-        </button>
+      {/* Floating Stardust Sparkles in Background */}
+      <div className="pip-orbit-stars" aria-hidden="true">
+        <span className="orbit-star os-1">✦</span>
+        <span className="orbit-star os-2">★</span>
+        <span className="orbit-star os-3">✧</span>
+        <span className="orbit-star os-4">⋆</span>
+        <span className="orbit-star os-5">♡</span>
       </div>
+
+      {/* Floating Poke Pill on Stage */}
+      <div className="pip-stage-hint-pill">
+        <Sparkles size={12} style={{ color: '#ffd166' }} />
+        <span>Poke Pip to giggle! ✨</span>
+      </div>
+
+      {/* VIEWPORT: Mode 1 - 360° Turntable Canvas with Background Removed */}
+      {viewMode === 'model' && (
+        <div
+          className={`turntable-viewport-wrap ${isTickling ? 'pip-jump-bounce' : ''}`}
+          style={{
+            transform: `perspective(1000px) rotateX(${tilt.x}deg) rotateY(${tilt.y}deg)`,
+            transition: isDraggingRef.current ? 'none' : 'transform 0.15s ease-out',
+          }}
+          onMouseDown={handlePointerDown}
+          onMouseMove={handlePointerMove}
+          onMouseUp={handlePointerUp}
+          onMouseLeave={handlePointerUp}
+          onTouchStart={handlePointerDown}
+          onTouchMove={handlePointerMove}
+          onTouchEnd={handlePointerUp}
+          onClick={triggerTickle}
+          title="Drag left/right to rotate Pip 360°! Click to tickle."
+          role="region"
+          aria-label="Interactive 3D Turntable of Pip the Skull Baby"
+        >
+          <canvas ref={canvasRef} className="turntable-canvas" />
+        </div>
+      )}
+
+      {/* VIEWPORT: Mode 2 - Live Video with Real-Time Chroma-Key Background Removal */}
+      {viewMode === 'video' && (
+        <div
+          className="video-chroma-viewport-wrap"
+          onClick={triggerTickle}
+          title="3D model video playing with real-time background removal"
+        >
+          {/* Hidden native video element */}
+          <video
+            ref={videoRef}
+            src="/3D model video.mp4"
+            loop
+            muted
+            playsInline
+            crossOrigin="anonymous"
+            style={{ display: 'none' }}
+          />
+
+          {/* Chroma-key Canvas Output */}
+          <canvas
+            ref={videoCanvasRef}
+            className="video-chroma-canvas"
+          />
+        </div>
+      )}
 
       {/* Floating 3D Interaction Control HUD */}
       <div className="three-pip-hud">
         <div className="hud-status-badge">
           <span className="live-pulse-dot" />
           <span>
-            {viewMode === 'model' ? `360° Interactive (${angleDeg}°)` : 'Live Chroma Stream'}
+            {viewMode === 'model' ? `360° (${angleDeg}°)` : 'Live Chroma'}
           </span>
         </div>
 
@@ -334,13 +384,13 @@ export default function ThreePipCharacter({
             aria-label="Tickle Pip in 3D"
           >
             <Sparkles size={14} />
-            <span>Tickle Pip</span>
+            <span>Tickle</span>
           </button>
 
           <button
             type="button"
             className="hud-btn hud-btn-icon"
-            onClick={() => handleZoomChange(0.12)}
+            onClick={() => handleZoomChange(0.1)}
             title="Zoom In"
             aria-label="Zoom in"
           >
@@ -350,7 +400,7 @@ export default function ThreePipCharacter({
           <button
             type="button"
             className="hud-btn hud-btn-icon"
-            onClick={() => handleZoomChange(-0.12)}
+            onClick={() => handleZoomChange(-0.1)}
             title="Zoom Out"
             aria-label="Zoom out"
           >
@@ -369,84 +419,12 @@ export default function ThreePipCharacter({
         </div>
       </div>
 
-      {/* VIEWPORT: Mode 1 - 360° Turntable Canvas with Background Removed */}
-      {viewMode === 'model' && (
-        <div
-          className={`turntable-viewport-wrap ${isTickling ? 'pip-jump-bounce' : ''}`}
-          style={{
-            transform: `perspective(1000px) rotateX(${tilt.x}deg) rotateY(${tilt.y}deg)`,
-            transition: isDraggingRef.current ? 'none' : 'transform 0.15s ease-out',
-          }}
-          onMouseDown={handlePointerDown}
-          onMouseMove={handlePointerMove}
-          onMouseUp={handlePointerUp}
-          onMouseLeave={handlePointerUp}
-          onTouchStart={handlePointerDown}
-          onTouchMove={handlePointerMove}
-          onTouchEnd={handlePointerUp}
-          onClick={triggerTickle}
-          title="Drag left/right to rotate Pip 360°! Click to tickle."
-          role="region"
-          aria-label="Interactive 3D Turntable of Pip the Skull Baby"
-        >
-          {/* Ambient Floating Orbit Stars */}
-          <div className="pip-orbit-stars" aria-hidden="true">
-            <span className="orbit-star os-1">✦</span>
-            <span className="orbit-star os-2">★</span>
-            <span className="orbit-star os-3">✧</span>
-            <span className="orbit-star os-4">⋆</span>
-            <span className="orbit-star os-5">♡</span>
-          </div>
-
-          <canvas ref={canvasRef} className="turntable-canvas" />
-
-          {/* Interactive Poke Bubble */}
-          <div className="pip-thought-bubble">
-            <Sparkles size={14} style={{ color: '#ffd166' }} />
-            <span>Drag to rotate 360° · Poke to giggle! ✨</span>
-          </div>
-        </div>
-      )}
-
-      {/* VIEWPORT: Mode 2 - Live Video with Real-Time Chroma-Key Background Removal */}
-      {viewMode === 'video' && (
-        <div
-          className="video-chroma-viewport-wrap"
-          onClick={triggerTickle}
-          title="3D model video playing with real-time background removal"
-        >
-          {/* Hidden native video element */}
-          <video
-            ref={videoRef}
-            src="/3D model video.mp4"
-            loop
-            muted
-            playsInline
-            crossOrigin="anonymous"
-            style={{ display: 'none' }}
-          />
-
-          {/* Chroma-key Canvas Output */}
-          <canvas
-            ref={videoCanvasRef}
-            width={452}
-            height={500}
-            className="video-chroma-canvas"
-          />
-
-          <div className="pip-thought-bubble">
-            <Film size={14} style={{ color: '#ffd166' }} />
-            <span>Streaming 3D Video with Background Removed 🎬</span>
-          </div>
-        </div>
-      )}
-
       {/* Helpful Quick Tip Pill */}
       <div className="three-pip-tip">
         <span>
           {viewMode === 'model'
-            ? '🖱️ Click & drag horizontally to rotate 360° · Scroll/buttons to zoom'
-            : '✨ Real-time chroma-key background removal active'}
+            ? '🖱️ Drag horizontally to rotate 360° · Click to tickle'
+            : '✨ Live 3D video with background removed'}
         </span>
       </div>
     </div>

@@ -94,7 +94,10 @@ export default function SparkleCursor({ enabled = true }) {
     };
   }, [enabled]);
 
-  if (!enabled) return null;
+  const isTouchDevice = typeof window !== 'undefined' && window.matchMedia('(hover: none)').matches;
+  const prefersReducedMotion = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  if (!enabled || isTouchDevice || prefersReducedMotion) return null;
 
   return (
     <canvas
@@ -106,7 +109,7 @@ export default function SparkleCursor({ enabled = true }) {
         width: '100vw',
         height: '100vh',
         pointerEvents: 'none',
-        zIndex: 9999,
+        zIndex: 50,
       }}
       aria-hidden="true"
     />

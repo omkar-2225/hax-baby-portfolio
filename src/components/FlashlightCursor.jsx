@@ -100,24 +100,13 @@ export default function FlashlightCursor({ isNight, enabled }) {
     };
   }, [isNight, enabled, isTouchDevice]);
 
-  if (!enabled || !isNight || !isVisible) return null;
+  if (!enabled || !isNight || !isVisible || isTouchDevice) return null;
 
   const c = dreamColors[colorIndex];
 
   return (
     <>
-      <div
-        className="flashlight-overlay"
-        aria-hidden="true"
-        style={{
-          background: `radial-gradient(
-            circle 220px at ${smoothPos.x}px ${smoothPos.y}px,
-            transparent 0%,
-            transparent 120px,
-            rgba(8, 6, 22, 0.72) 220px
-          )`,
-        }}
-      />
+      {/* Soft ambient lantern aura following cursor without dimming page text */}
       <div
         className="flashlight-inner-glow"
         aria-hidden="true"

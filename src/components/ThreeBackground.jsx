@@ -41,40 +41,43 @@ export default function ThreeBackground({ isNight = true }) {
     dirLight.position.set(10, 20, 15);
     scene.add(dirLight);
 
-    // 2. 3D Star Geometries
+    // 2. 3D Star Geometries (Diamonds / Gems)
+    const isMobile = window.innerWidth < 768;
+    const starCount = isMobile ? 18 : 42; // cut count on mobile
     const stars = [];
-    const starGeo = new THREE.OctahedronGeometry(0.45, 0); // 3D diamond star
+    const starGeo = new THREE.OctahedronGeometry(isMobile ? 0.35 : 0.42, 0); // 3D diamond star
     const starColors = isNight
       ? [0xffd166, 0xff99c8, 0xa9def9, 0xfcf6bd, 0xffffff]
       : [0xffb703, 0xfb8500, 0xf72585, 0x4cc9f0, 0xffeedd];
 
-    for (let i = 0; i < 65; i++) {
+    for (let i = 0; i < starCount; i++) {
       const mat = new THREE.MeshStandardMaterial({
         color: starColors[i % starColors.length],
         roughness: 0.3,
         metalness: 0.6,
         emissive: starColors[i % starColors.length],
-        emissiveIntensity: isNight ? 0.4 : 0.2,
+        emissiveIntensity: isNight ? 0.35 : 0.2,
       });
 
       const starMesh = new THREE.Mesh(starGeo, mat);
-      const radius = 12 + Math.random() * 22;
+      // Keep stars along the perimeter and away from center text column
+      const radius = isMobile ? 18 + Math.random() * 12 : 16 + Math.random() * 18;
       const theta = Math.random() * Math.PI * 2;
-      const phi = (Math.random() - 0.5) * Math.PI * 0.8;
+      const phi = (Math.random() - 0.5) * Math.PI * 0.85;
 
       starMesh.position.set(
         radius * Math.cos(theta) * Math.cos(phi),
         radius * Math.sin(phi),
-        (Math.random() - 0.5) * 20 - 5
+        -10 - Math.random() * 15 // keep strictly in background depth
       );
 
-      const s = 0.5 + Math.random() * 1.2;
+      const s = 0.5 + Math.random() * 0.9;
       starMesh.scale.set(s, s, s);
 
       starMesh.userData = {
-        rotSpeedX: (Math.random() - 0.5) * 0.02,
-        rotSpeedY: (Math.random() - 0.5) * 0.02,
-        floatSpeed: 0.001 + Math.random() * 0.002,
+        rotSpeedX: (Math.random() - 0.5) * 0.015,
+        rotSpeedY: (Math.random() - 0.5) * 0.015,
+        floatSpeed: 0.001 + Math.random() * 0.0015,
         initialY: starMesh.position.y,
         floatOffset: Math.random() * Math.PI * 2,
       };
@@ -205,7 +208,7 @@ export default function ThreeBackground({ isNight = true }) {
         width: '100vw',
         height: '100vh',
         pointerEvents: 'none',
-        zIndex: 0,
+        zIndex: -1,
         overflow: 'hidden',
       }}
       aria-hidden="true"
