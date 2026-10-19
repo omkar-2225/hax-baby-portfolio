@@ -9,6 +9,7 @@ import Hero from './components/Hero';
 import ProjectsSection from './components/ProjectsSection';
 import StorybookFlip from './components/StorybookFlip';
 import Guestbook from './components/Guestbook';
+import PipChat from './components/PipChat';
 import EasterEggModal from './components/EasterEggModal';
 import Footer from './components/Footer';
 import './App.css';
@@ -106,6 +107,7 @@ export default function App() {
           <Hero
             onTriggerEasterEgg={() => setEasterEggOpen(true)}
             onReplayIntro={handleReplayIntro}
+            isNight={isNight}
           />
 
           {/* Section 02: Inventions & Showcase Projects (Lullaby Lab, Lantern, Map, Toys) */}
@@ -123,6 +125,9 @@ export default function App() {
 
         {/* Footer with Mandatory Rubric Attributions & Credits */}
         <Footer onTriggerEasterEgg={() => setEasterEggOpen(true)} />
+
+        {/* Tier 3 Legendary: Character Chats Back (AI & Rule-Based Dialogue) */}
+        <PipChat />
       </div>
 
       {/* Core Requirement 6: Hidden Easter Egg Modal */}

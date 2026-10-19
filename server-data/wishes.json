@@ -1,0 +1,32 @@
+[
+  {
+    "id": "wish-1",
+    "name": "Barnaby Bear",
+    "sticker": "🐻",
+    "message": "Pip, your chamomile music box melody cured my 3-week winter insomnia! 10/10 best engineer.",
+    "time": "2 hours ago",
+    "timestamp": 1792390798748,
+    "tag": "Verified Dreamer",
+    "loves": 14
+  },
+  {
+    "id": "wish-2",
+    "name": "Luna the Night Owl",
+    "sticker": "🦉",
+    "message": "The porcelain moon lantern keeps my nursery hollow so warm and cozy. Thank you Pip!",
+    "time": "5 hours ago",
+    "timestamp": 1792379998748,
+    "tag": "Midnight Neighbor",
+    "loves": 9
+  },
+  {
+    "id": "wish-3",
+    "name": "Sprout the Sprite",
+    "sticker": "🍄",
+    "message": "Can you please route a dream of flying over pink cotton candy mountains tonight? ✨",
+    "time": "Yesterday",
+    "timestamp": 1792311598748,
+    "tag": "Cloud Hopper",
+    "loves": 21
+  }
+]
