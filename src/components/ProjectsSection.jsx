@@ -14,25 +14,51 @@ import {
 } from 'lucide-react';
 
 export default function ProjectsSection({ isMuted, onToggleMute }) {
-  // --- Project 1: Lullaby Lab State ---
+  // --- Project 1: Lullaby Lab State & Indian Melody Presets ---
   const [isPlayingLullaby, setIsPlayingLullaby] = useState(false);
   const [activeNote, setActiveNote] = useState(null);
+  const [selectedMelody, setSelectedMelody] = useState('lalla_lori');
 
+  const lullabyPlaylist = [
+    { id: 'lalla_lori', label: 'Lalla Lalla Lori', badge: '🇮🇳 Classic Lori', icon: '🪷' },
+    { id: 'bala_jo_jo', label: 'Bala Jo Jo Re', badge: '🇮🇳 Marathi Angai', icon: '👶' },
+    { id: 'chanda_mama', label: 'Chanda Mama', badge: '🇮🇳 Playful Lori', icon: '🥣' },
+    { id: 'surmayee', label: 'Surmayee Ankhiyon', badge: '🇮🇳 Dreamy Lori', icon: '🌙' },
+    { id: 'raag_bhupali', label: 'Raag Bhupali', badge: '🇮🇳 Night Raga', icon: '🪈' },
+    { id: 'celestial_box', label: 'Starlight Box', badge: '✨ Western Box', icon: '⭐' },
+  ];
+
+  // 8-Note Indian Sargam (Swara) & Western Glockenspiel Keys
   const musicBoxKeys = [
-    { label: 'Do (C5)', note: 'C5', freq: 523.25, color: '#ffb3ba' },
-    { label: 'Re (D5)', note: 'D5', freq: 587.33, color: '#ffdfba' },
-    { label: 'Mi (E5)', note: 'E5', freq: 659.25, color: '#ffffba' },
-    { label: 'Sol (G5)', note: 'G5', freq: 783.99, color: '#baffc9' },
-    { label: 'La (A5)', note: 'A5', freq: 880.00, color: '#bae1ff' },
-    { label: 'Do (C6)', note: 'C6', freq: 1046.50, color: '#e8c5ff' },
-    { label: 'Re (D6)', note: 'D6', freq: 1174.66, color: '#ffd1dc' },
-    { label: 'Mi (E6)', note: 'E6', freq: 1318.51, color: '#fff0f5' },
+    { sargam: 'Sa', note: 'C5', freq: 523.25, color: '#ffb3ba' },
+    { sargam: 'Re', note: 'D5', freq: 587.33, color: '#ffdfba' },
+    { sargam: 'Ga', note: 'E5', freq: 659.25, color: '#ffffba' },
+    { sargam: 'Ma', note: 'F5', freq: 698.46, color: '#baffc9' },
+    { sargam: 'Pa', note: 'G5', freq: 783.99, color: '#bae1ff' },
+    { sargam: 'Dha', note: 'A5', freq: 880.00, color: '#e8c5ff' },
+    { sargam: 'Ni', note: 'B5', freq: 987.77, color: '#ffd1dc' },
+    { sargam: "Sa'", note: 'C6', freq: 1046.50, color: '#fff0f5' },
   ];
 
   const handleKeyClick = (key) => {
-    setActiveNote(key.note);
+    setActiveNote(key.sargam);
     sound.playMusicBoxNote(key.freq);
     setTimeout(() => setActiveNote(null), 300);
+  };
+
+  const playChosenMelody = (melodyId) => {
+    setIsPlayingLullaby(true);
+    sound.playLullabyMelody(melodyId, (note) => {
+      setActiveNote(note);
+    });
+  };
+
+  const handleSelectMelody = (melodyId) => {
+    sound.playPop();
+    setSelectedMelody(melodyId);
+    if (isPlayingLullaby) {
+      playChosenMelody(melodyId);
+    }
   };
 
   const toggleAutoLullaby = () => {
@@ -41,10 +67,7 @@ export default function ProjectsSection({ isMuted, onToggleMute }) {
       setIsPlayingLullaby(false);
       setActiveNote(null);
     } else {
-      setIsPlayingLullaby(true);
-      sound.playLullabyMelody((note) => {
-        setActiveNote(note);
-      });
+      playChosenMelody(selectedMelody);
     }
   };
 
@@ -203,10 +226,30 @@ export default function ProjectsSection({ isMuted, onToggleMute }) {
             <div className="project-info">
               <h3 className="project-name">The Lullaby Lab (Unicorn Music Box)</h3>
               <p className="project-desc">
-                Pip's proudest invention! Synthesizes soothing C-Major pentatonic bell
-                tones using real Web Audio API oscillators. Visitors can tap the chime keys
-                or let Pip auto-compose an endless relaxing bedtime melody.
+                Pip's proudest musical invention! Synthesizes authentic Indian bedtime loris,
+                classical night ragas (Raag Bhupali), and celestial bell chimes using Web Audio API
+                oscillators. Select an Indian tune or tap the Indian Sargam keys!
               </p>
+
+              {/* Indian Lullaby & Classical Raga Selector */}
+              <div className="lullaby-melody-picker">
+                <span className="picker-label">🌙 Choose Bedtime Tune (Indian Loris & Ragas):</span>
+                <div className="melody-pills-wrap">
+                  {lullabyPlaylist.map((m) => (
+                    <button
+                      key={m.id}
+                      type="button"
+                      className={`melody-pill-btn ${selectedMelody === m.id ? 'melody-pill-active' : ''}`}
+                      onClick={() => handleSelectMelody(m.id)}
+                      title={`Select ${m.label}`}
+                    >
+                      <span className="melody-icon">{m.icon}</span>
+                      <span className="melody-title">{m.label}</span>
+                      <span className="melody-badge">{m.badge}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
 
               {/* Play / Stop Button + Mute Status */}
               <div className="music-box-actions">
@@ -223,7 +266,9 @@ export default function ProjectsSection({ isMuted, onToggleMute }) {
                   ) : (
                     <>
                       <Play size={16} fill="currentColor" />
-                      <span>Play Pip's Dream Melody</span>
+                      <span>
+                        Play {lullabyPlaylist.find((m) => m.id === selectedMelody)?.label || "Pip's Melody"}
+                      </span>
                     </>
                   )}
                 </button>
@@ -239,20 +284,27 @@ export default function ProjectsSection({ isMuted, onToggleMute }) {
                 </button>
               </div>
 
-              {/* 8-Note Interactive Glockenspiel Keys */}
+              {/* 8-Note Interactive Glockenspiel Keys with Indian Sargam Swaras */}
               <div className="keys-container">
-                <span className="keys-label">Tap keys to play chime bells:</span>
+                <div className="keys-header-row">
+                  <span className="keys-label">Tap keys to play chime bells:</span>
+                  <span className="keys-badge-sargam">Indian Sargam (Swaras) + Western Pitch</span>
+                </div>
                 <div className="piano-keys-grid">
                   {musicBoxKeys.map((k) => (
                     <button
                       key={k.note}
                       type="button"
-                      className={`chime-key ${activeNote === k.note ? 'key-active' : ''}`}
+                      className={`chime-key ${
+                        activeNote?.includes(k.sargam) || activeNote === k.sargam || activeNote === k.note
+                          ? 'key-active'
+                          : ''
+                      }`}
                       style={{ borderBottomColor: k.color }}
                       onClick={() => handleKeyClick(k)}
-                      title={`Play note ${k.label}`}
+                      title={`Play note ${k.sargam} (${k.note} · ${k.freq}Hz)`}
                     >
-                      <span className="key-symbol">✦</span>
+                      <span className="key-sargam">{k.sargam}</span>
                       <span className="key-name">{k.note}</span>
                     </button>
                   ))}

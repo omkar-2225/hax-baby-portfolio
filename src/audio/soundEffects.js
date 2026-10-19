@@ -336,36 +336,180 @@ class SoundEngine {
     osc2.stop(now + duration);
   }
 
-  // Play a full generative bedtime melody
-  playLullabyMelody(onNoteChange = null) {
+  // Available Lullaby Melodies (Authentic Indian Loris, Marathi Angai & Night Ragas with real musical rhythms)
+  MELODIES = {
+    lalla_lori: {
+      id: 'lalla_lori',
+      name: 'Lalla Lalla Lori',
+      origin: '🇮🇳 Classic Indian Lori',
+      notes: [
+        // "Lal-la Lal-la Lo-ri"
+        { note: 'Sa', freq: 523.25, duration: 260, pause: 30 },
+        { note: 'Sa', freq: 523.25, duration: 260, pause: 60 },
+        { note: 'Ga', freq: 659.25, duration: 260, pause: 30 },
+        { note: 'Ga', freq: 659.25, duration: 260, pause: 60 },
+        { note: 'Pa', freq: 783.99, duration: 420, pause: 60 },
+        { note: 'Pa', freq: 783.99, duration: 750, pause: 320 },
+        // "Doodh ki ka-to-ri"
+        { note: 'Ga', freq: 659.25, duration: 260, pause: 30 },
+        { note: 'Pa', freq: 783.99, duration: 260, pause: 30 },
+        { note: 'Dha', freq: 880.00, duration: 260, pause: 30 },
+        { note: 'Pa', freq: 783.99, duration: 260, pause: 40 },
+        { note: 'Ga', freq: 659.25, duration: 420, pause: 60 },
+        { note: 'Re', freq: 587.33, duration: 750, pause: 320 },
+        // "Doodh me ba-ta-sha"
+        { note: 'Sa', freq: 523.25, duration: 260, pause: 30 },
+        { note: 'Sa', freq: 523.25, duration: 260, pause: 60 },
+        { note: 'Ga', freq: 659.25, duration: 260, pause: 30 },
+        { note: 'Ga', freq: 659.25, duration: 260, pause: 60 },
+        { note: 'Re', freq: 587.33, duration: 420, pause: 60 },
+        { note: 'Re', freq: 587.33, duration: 750, pause: 320 },
+        // "Mun-ni ka-re ta-ma-sha"
+        { note: 'Sa', freq: 523.25, duration: 260, pause: 30 },
+        { note: 'Re', freq: 587.33, duration: 260, pause: 30 },
+        { note: 'Ga', freq: 659.25, duration: 280, pause: 40 },
+        { note: 'Re', freq: 587.33, duration: 320, pause: 50 },
+        { note: 'Sa', freq: 523.25, duration: 950, pause: 600 },
+      ],
+    },
+    chanda_mama: {
+      id: 'chanda_mama',
+      name: 'Chanda Mama Door Ke',
+      origin: '🇮🇳 Playful Indian Lori',
+      notes: [
+        // "Chan-da Ma-ma Door Ke"
+        { note: 'Pa', freq: 783.99, duration: 300, pause: 40 },
+        { note: 'Pa', freq: 783.99, duration: 280, pause: 60 },
+        { note: 'Ga', freq: 659.25, duration: 300, pause: 40 },
+        { note: 'Pa', freq: 783.99, duration: 340, pause: 50 },
+        { note: 'Dha', freq: 880.00, duration: 520, pause: 60 },
+        { note: 'Pa', freq: 783.99, duration: 750, pause: 320 },
+        // "Puye paka-ye boor ke"
+        { note: 'Ga', freq: 659.25, duration: 250, pause: 30 },
+        { note: 'Pa', freq: 783.99, duration: 250, pause: 30 },
+        { note: 'Ga', freq: 659.25, duration: 250, pause: 30 },
+        { note: 'Re', freq: 587.33, duration: 300, pause: 40 },
+        { note: 'Ga', freq: 659.25, duration: 520, pause: 60 },
+        { note: 'Re', freq: 587.33, duration: 750, pause: 320 },
+        // "Aap kha-ye tha-li mein"
+        { note: 'Sa', freq: 523.25, duration: 260, pause: 30 },
+        { note: 'Re', freq: 587.33, duration: 260, pause: 30 },
+        { note: 'Ga', freq: 659.25, duration: 300, pause: 40 },
+        { note: 'Pa', freq: 783.99, duration: 300, pause: 40 },
+        { note: 'Dha', freq: 880.00, duration: 550, pause: 60 },
+        { note: 'Pa', freq: 783.99, duration: 750, pause: 320 },
+        // "Mun-ne ko de pya-li mein"
+        { note: 'Ga', freq: 659.25, duration: 250, pause: 30 },
+        { note: 'Re', freq: 587.33, duration: 250, pause: 30 },
+        { note: 'Sa', freq: 523.25, duration: 320, pause: 40 },
+        { note: 'Re', freq: 587.33, duration: 420, pause: 60 },
+        { note: 'Sa', freq: 523.25, duration: 950, pause: 600 },
+      ],
+    },
+    bala_jo_jo: {
+      id: 'bala_jo_jo',
+      name: 'Bala Jo Jo Re (बाळा जो जो रे)',
+      origin: '🇮🇳 Classic Marathi Angai',
+      notes: [
+        // "Jo jo je jo jo je... baala jo jo re"
+        { note: 'Sa', freq: 523.25, duration: 380, pause: 60 },
+        { note: 'Ga', freq: 659.25, duration: 380, pause: 60 },
+        { note: 'Pa', freq: 783.99, duration: 700, pause: 240 },
+        { note: 'Pa', freq: 783.99, duration: 380, pause: 60 },
+        { note: 'Dha', freq: 880.00, duration: 380, pause: 60 },
+        { note: 'Pa', freq: 783.99, duration: 700, pause: 260 },
+        // "Nij re nij maajhya baala"
+        { note: 'Ga', freq: 659.25, duration: 320, pause: 50 },
+        { note: 'Pa', freq: 783.99, duration: 320, pause: 50 },
+        { note: 'Ga', freq: 659.25, duration: 380, pause: 50 },
+        { note: 'Re', freq: 587.33, duration: 720, pause: 240 },
+        { note: 'Sa', freq: 523.25, duration: 950, pause: 580 },
+      ],
+    },
+    surmayee: {
+      id: 'surmayee',
+      name: 'Surmayee Ankhiyon Mein',
+      origin: '🇮🇳 Dreamy Bollywood Lori',
+      notes: [
+        // "Sur-ma-yee An-khi-yon Mein"
+        { note: 'Ga', freq: 659.25, duration: 500, pause: 60 },
+        { note: 'Pa', freq: 783.99, duration: 420, pause: 60 },
+        { note: 'Dha', freq: 880.00, duration: 850, pause: 280 },
+        { note: 'Pa', freq: 783.99, duration: 420, pause: 50 },
+        { note: 'Ga', freq: 659.25, duration: 520, pause: 60 },
+        { note: 'Re', freq: 587.33, duration: 780, pause: 240 },
+        // "Nan-ha mun-na ek sap-na"
+        { note: 'Sa', freq: 523.25, duration: 580, pause: 140 },
+        { note: 'Re', freq: 587.33, duration: 380, pause: 40 },
+        { note: 'Ga', freq: 659.25, duration: 480, pause: 50 },
+        { note: 'Pa', freq: 783.99, duration: 520, pause: 60 },
+        { note: 'Dha', freq: 880.00, duration: 600, pause: 70 },
+        { note: "Sa'", freq: 1046.50, duration: 1100, pause: 450 },
+      ],
+    },
+    raag_bhupali: {
+      id: 'raag_bhupali',
+      name: 'Raag Bhupali (Night Alaap)',
+      origin: '🇮🇳 Classical Night Raga',
+      notes: [
+        // Meditative, slow, soaring classical Bhupali Alaap
+        { note: 'Sa', freq: 523.25, duration: 650, pause: 120 },
+        { note: 'Re', freq: 587.33, duration: 650, pause: 120 },
+        { note: 'Ga', freq: 659.25, duration: 900, pause: 220 },
+        { note: 'Pa', freq: 783.99, duration: 750, pause: 160 },
+        { note: 'Dha', freq: 880.00, duration: 900, pause: 220 },
+        { note: "Sa'", freq: 1046.50, duration: 1200, pause: 380 },
+        { note: 'Dha', freq: 880.00, duration: 750, pause: 140 },
+        { note: 'Pa', freq: 783.99, duration: 750, pause: 140 },
+        { note: 'Ga', freq: 659.25, duration: 900, pause: 180 },
+        { note: 'Re', freq: 587.33, duration: 750, pause: 140 },
+        { note: 'Sa', freq: 523.25, duration: 1300, pause: 500 },
+      ],
+    },
+    celestial_box: {
+      id: 'celestial_box',
+      name: 'Starlight Music Box',
+      origin: '✨ Western Celestial Original',
+      notes: [
+        { note: 'Sa', freq: 523.25, duration: 380, pause: 80 },
+        { note: 'Ga', freq: 659.25, duration: 380, pause: 80 },
+        { note: 'Pa', freq: 783.99, duration: 520, pause: 100 },
+        { note: 'Ga', freq: 659.25, duration: 380, pause: 80 },
+        { note: 'Dha', freq: 880.00, duration: 520, pause: 100 },
+        { note: 'Pa', freq: 783.99, duration: 700, pause: 200 },
+        { note: 'Ga', freq: 659.25, duration: 380, pause: 80 },
+        { note: 'Sa', freq: 523.25, duration: 520, pause: 100 },
+        { note: 'Re', freq: 587.33, duration: 380, pause: 80 },
+        { note: 'Ga', freq: 659.25, duration: 380, pause: 80 },
+        { note: 'Pa', freq: 783.99, duration: 520, pause: 100 },
+        { note: "Sa'", freq: 1046.50, duration: 950, pause: 400 },
+      ],
+    },
+  };
+
+  // Play a full generative bedtime melody with authentic human rhythm & note durations
+  playLullabyMelody(melodyKey = 'lalla_lori', onNoteChange = null) {
     if (this.isMuted) return;
     this.init();
     if (!this.ctx) return;
+    this.stopMelody();
 
-    const pentatonic = [
-      { note: 'C5', freq: 523.25 },
-      { note: 'D5', freq: 587.33 },
-      { note: 'E5', freq: 659.25 },
-      { note: 'G5', freq: 783.99 },
-      { note: 'A5', freq: 880.00 },
-      { note: 'C6', freq: 1046.50 },
-      { note: 'D6', freq: 1174.66 },
-      { note: 'E6', freq: 1318.51 },
-    ];
-
-    const melody = [0, 2, 3, 2, 4, 3, 2, 0, 1, 2, 3, 2, 1, 0, 2, 0];
+    const selected = this.MELODIES[melodyKey] || this.MELODIES.lalla_lori;
+    const { notes } = selected;
     let step = 0;
 
     const playNext = () => {
       if (this.isMuted) return;
-      if (step >= melody.length) step = 0;
+      if (step >= notes.length) step = 0;
 
-      const noteObj = pentatonic[melody[step] % pentatonic.length];
-      this.playMusicBoxNote(noteObj.freq, 1.4);
+      const noteObj = notes[step];
+      const durSec = (noteObj.duration || 400) / 1000 + 0.6;
+      this.playMusicBoxNote(noteObj.freq, durSec);
       if (onNoteChange) onNoteChange(noteObj.note);
 
       step++;
-      this.activeMelodyTimeout = setTimeout(playNext, 650);
+      const waitTime = (noteObj.duration || 400) + (noteObj.pause || 0);
+      this.activeMelodyTimeout = setTimeout(playNext, waitTime);
     };
 
     playNext();
@@ -375,6 +519,112 @@ class SoundEngine {
     if (this.activeMelodyTimeout) {
       clearTimeout(this.activeMelodyTimeout);
       this.activeMelodyTimeout = null;
+    }
+  }
+
+  // =====================================================================
+  // AI BABY VOICE NARRATION — High-pitch toddler/baby speech synthesis
+  // Uses Web Speech API with tuned formants, rate & cute soundwave triggers
+  // =====================================================================
+
+  getBestBabyVoice() {
+    if (typeof window === 'undefined' || !window.speechSynthesis) return null;
+    const voices = window.speechSynthesis.getVoices() || [];
+    if (!voices.length) return null;
+
+    // Prefer clear, melodic female/child-friendly voices which sound adorable when pitched up
+    const preferredNames = [
+      'Samantha',
+      'Victoria',
+      'Karen',
+      'Google US English',
+      'Microsoft Zira',
+      'Moira',
+      'Fiona',
+      'Tessa',
+      'Princess',
+    ];
+
+    for (const name of preferredNames) {
+      const found = voices.find((v) => v.name && v.name.includes(name));
+      if (found) return found;
+    }
+
+    // Fallback: any English female/default voice
+    const enVoice = voices.find((v) => v.lang && v.lang.startsWith('en'));
+    return enVoice || voices[0] || null;
+  }
+
+  speakBabyVoice(text, {
+    pitch = 1.78, // High-pitched sweet baby register
+    rate = 0.88,  // Gentle, deliberate toddler storytelling speed
+    onStart = null,
+    onEnd = null,
+    onBoundary = null,
+  } = {}) {
+    if (typeof window === 'undefined' || !window.speechSynthesis) {
+      if (onEnd) onEnd();
+      return;
+    }
+
+    // Stop any ongoing speech
+    this.stopBabyVoice();
+
+    // Soft baby chime before speaking
+    this.playPop();
+
+    const cleanText = text
+      .replace(/["'“”]/g, '')
+      .replace(/·/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+
+    const utterance = new SpeechSynthesisUtterance(cleanText);
+    utterance.pitch = pitch;
+    utterance.rate = rate;
+    utterance.volume = this.isMuted ? 0 : 1.0;
+
+    const voice = this.getBestBabyVoice();
+    if (voice) {
+      utterance.voice = voice;
+    }
+
+    utterance.onstart = () => {
+      this.isSpeakingBaby = true;
+      if (onStart) onStart();
+    };
+
+    utterance.onend = () => {
+      this.isSpeakingBaby = false;
+      if (onEnd) onEnd();
+    };
+
+    utterance.onerror = () => {
+      this.isSpeakingBaby = false;
+      if (onEnd) onEnd();
+    };
+
+    if (onBoundary) {
+      utterance.onboundary = (e) => {
+        if (e.name === 'word') {
+          onBoundary(e.charIndex, e.charLength);
+        }
+      };
+    }
+
+    // Chrome/Safari edge case: voices may need re-populating or synthesis unfreezing
+    if (window.speechSynthesis.paused) {
+      window.speechSynthesis.resume();
+    }
+
+    window.speechSynthesis.speak(utterance);
+    this.currentUtterance = utterance;
+  }
+
+  stopBabyVoice() {
+    this.isSpeakingBaby = false;
+    if (typeof window !== 'undefined' && window.speechSynthesis) {
+      window.speechSynthesis.cancel();
     }
   }
 
