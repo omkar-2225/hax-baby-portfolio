@@ -247,6 +247,8 @@ export default function ThreePipCharacter({
 
   const handlePointerUp = () => {
     isDraggingRef.current = false;
+    // Resume continuous 360° spin immediately
+    setAutoRotate(true);
   };
 
   // 6. Tickle Pip Reaction
@@ -278,6 +280,7 @@ export default function ThreePipCharacter({
     setCurrentFrame(FRONT_FRAME_INDEX);
     setZoomScale(1.0);
     setTilt({ x: 0, y: 0 });
+    setAutoRotate(true);
   };
 
   // Compute rotation angle in degrees for the HUD
@@ -294,87 +297,49 @@ export default function ThreePipCharacter({
         <span className="orbit-star os-5">♡</span>
       </div>
 
-      {/* Floating Poke Pill on Stage */}
-      <div className="pip-stage-hint-pill">
-        <Sparkles size={12} style={{ color: '#ffd166' }} />
-        <span>Poke Pip to giggle! ✨</span>
+      {/* VIEWPORT: 360° Continuous Turntable Canvas (Transparent Background) */}
+      <div
+        className={`turntable-viewport-wrap ${isTickling ? 'pip-jump-bounce' : ''}`}
+        style={{
+          transform: `perspective(1000px) rotateX(${tilt.x}deg) rotateY(${tilt.y}deg)`,
+          transition: isDraggingRef.current ? 'none' : 'transform 0.15s ease-out',
+        }}
+        onMouseDown={handlePointerDown}
+        onMouseMove={handlePointerMove}
+        onMouseUp={handlePointerUp}
+        onMouseLeave={handlePointerUp}
+        onTouchStart={handlePointerDown}
+        onTouchMove={handlePointerMove}
+        onTouchEnd={handlePointerUp}
+        onClick={triggerTickle}
+        title="Continuous 360° 3D Model! Drag horizontally to rotate or click to tickle."
+        role="region"
+        aria-label="Interactive 3D Turntable of Pip the Skull Baby"
+      >
+        <canvas ref={canvasRef} className="turntable-canvas" />
       </div>
 
-      {/* VIEWPORT: Mode 1 - 360° Turntable Canvas with Background Removed */}
-      {viewMode === 'model' && (
-        <div
-          className={`turntable-viewport-wrap ${isTickling ? 'pip-jump-bounce' : ''}`}
-          style={{
-            transform: `perspective(1000px) rotateX(${tilt.x}deg) rotateY(${tilt.y}deg)`,
-            transition: isDraggingRef.current ? 'none' : 'transform 0.15s ease-out',
-          }}
-          onMouseDown={handlePointerDown}
-          onMouseMove={handlePointerMove}
-          onMouseUp={handlePointerUp}
-          onMouseLeave={handlePointerUp}
-          onTouchStart={handlePointerDown}
-          onTouchMove={handlePointerMove}
-          onTouchEnd={handlePointerUp}
-          onClick={triggerTickle}
-          title="Drag left/right to rotate Pip 360°! Click to tickle."
-          role="region"
-          aria-label="Interactive 3D Turntable of Pip the Skull Baby"
-        >
-          <canvas ref={canvasRef} className="turntable-canvas" />
-        </div>
-      )}
-
-      {/* VIEWPORT: Mode 2 - Live Video with Real-Time Chroma-Key Background Removal */}
-      {viewMode === 'video' && (
-        <div
-          className="video-chroma-viewport-wrap"
-          onClick={triggerTickle}
-          title="3D model video playing with real-time background removal"
-        >
-          {/* Hidden native video element */}
-          <video
-            ref={videoRef}
-            src="/3D model video.mp4"
-            loop
-            muted
-            playsInline
-            crossOrigin="anonymous"
-            style={{ display: 'none' }}
-          />
-
-          {/* Chroma-key Canvas Output */}
-          <canvas
-            ref={videoCanvasRef}
-            className="video-chroma-canvas"
-          />
-        </div>
-      )}
-
-      {/* Floating 3D Interaction Control HUD */}
+      {/* Floating 3D Interaction Control HUD (Centered, no clipping) */}
       <div className="three-pip-hud">
         <div className="hud-status-badge">
           <span className="live-pulse-dot" />
-          <span>
-            {viewMode === 'model' ? `360° (${angleDeg}°)` : 'Live Chroma'}
-          </span>
+          <span>360° ({angleDeg}°)</span>
         </div>
 
         <div className="hud-buttons-row">
-          {viewMode === 'model' && (
-            <button
-              type="button"
-              className={`hud-btn ${autoRotate ? 'hud-btn-active' : ''}`}
-              onClick={() => {
-                sound.playPop();
-                setAutoRotate(!autoRotate);
-              }}
-              title={autoRotate ? 'Pause 3D auto-spin' : 'Start 3D auto-spin'}
-              aria-label="Toggle 3D auto-rotation"
-            >
-              <RotateCw size={14} className={autoRotate ? 'spin-slow' : ''} />
-              <span>{autoRotate ? 'Spinning' : 'Spin'}</span>
-            </button>
-          )}
+          <button
+            type="button"
+            className={`hud-btn ${autoRotate ? 'hud-btn-active' : ''}`}
+            onClick={() => {
+              sound.playPop();
+              setAutoRotate(!autoRotate);
+            }}
+            title={autoRotate ? 'Pause 3D auto-spin' : 'Start continuous auto-spin'}
+            aria-label="Toggle continuous 3D auto-spin"
+          >
+            <RotateCw size={13} className={autoRotate ? 'spin-slow' : ''} />
+            <span>{autoRotate ? 'Spinning' : 'Spin'}</span>
+          </button>
 
           <button
             type="button"
@@ -383,7 +348,7 @@ export default function ThreePipCharacter({
             title="Tickle Pip for giggles and star confetti!"
             aria-label="Tickle Pip in 3D"
           >
-            <Sparkles size={14} />
+            <Sparkles size={13} />
             <span>Tickle</span>
           </button>
 
@@ -394,7 +359,7 @@ export default function ThreePipCharacter({
             title="Zoom In"
             aria-label="Zoom in"
           >
-            <ZoomIn size={14} />
+            <ZoomIn size={13} />
           </button>
 
           <button
@@ -404,7 +369,7 @@ export default function ThreePipCharacter({
             title="Zoom Out"
             aria-label="Zoom out"
           >
-            <ZoomOut size={14} />
+            <ZoomOut size={13} />
           </button>
 
           <button
@@ -414,18 +379,14 @@ export default function ThreePipCharacter({
             title="Reset front view (0°)"
             aria-label="Reset front view"
           >
-            <RefreshCw size={14} />
+            <RefreshCw size={13} />
           </button>
         </div>
       </div>
 
       {/* Helpful Quick Tip Pill */}
       <div className="three-pip-tip">
-        <span>
-          {viewMode === 'model'
-            ? '🖱️ Drag horizontally to rotate 360° · Click to tickle'
-            : '✨ Live 3D video with background removed'}
-        </span>
+        <span>🖱️ Drag to rotate 360° · Click Pip to giggle!</span>
       </div>
     </div>
   );

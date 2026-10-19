@@ -548,8 +548,10 @@
 /* --- ORGANIC FLOATING PIP CHARACTER (No Boxy Card) --- */
 .hero-floating-pip-col {
   display: flex;
-  justify-content: center;
+  flex-direction: column;
   align-items: center;
+  justify-content: center;
+  width: 100%;
   perspective: 1000px;
 }
 

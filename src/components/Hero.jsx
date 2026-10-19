@@ -7,7 +7,7 @@ import VisitorMemoryBadge from './VisitorMemoryBadge';
 
 export default function Hero({ onTriggerEasterEgg, onReplayIntro, isNight = true }) {
   const cardRef = useRef(null);
-  const [characterMode, setCharacterMode] = useState('3d-model'); // '3d-model' | '3d-video' | '2d'
+  const [characterMode, setCharacterMode] = useState('3d'); // '3d' | '2d'
   const [tilt, setTilt] = useState({ x: 0, y: 0 });
   const [eyeOffset, setEyeOffset] = useState({ x: 0, y: 0 });
   const [isNodding, setIsNodding] = useState(false);
@@ -147,35 +147,21 @@ export default function Hero({ onTriggerEasterEgg, onReplayIntro, isNight = true
 
         {/* Right Column: Character Stage (Interactive 3D WebGL vs Storybook Portrait) */}
         <div className="hero-floating-pip-col animate-scroll-up" style={{ animationDelay: '0.2s' }}>
-          {/* Unified Hero Model Segmented Control (Bug 2: Rebuilt clean control, min 44px targets) */}
+          {/* Hero Character Switcher: 3D Model vs Portrait Art (Clean segmented row, perfectly aligned) */}
           <div className="hero-segmented-control-wrap" role="toolbar" aria-label="Pip character view options">
             <div className="hero-segmented-control">
               <button
                 type="button"
-                className={`segmented-tab-btn ${characterMode === '3d-model' ? 'tab-active' : ''}`}
+                className={`segmented-tab-btn ${characterMode === '3d' ? 'tab-active' : ''}`}
                 onClick={() => {
                   sound.playPop();
-                  setCharacterMode('3d-model');
+                  setCharacterMode('3d');
                 }}
-                aria-pressed={characterMode === '3d-model'}
-                title="Rotate and inspect Pip in full 3D (360°)"
+                aria-pressed={characterMode === '3d'}
+                title="Rotate and inspect Pip in full 3D (360° continuous spin)"
               >
                 <Box size={15} />
                 <span>3D Model</span>
-              </button>
-
-              <button
-                type="button"
-                className={`segmented-tab-btn ${characterMode === '3d-video' ? 'tab-active' : ''}`}
-                onClick={() => {
-                  sound.playPop();
-                  setCharacterMode('3d-video');
-                }}
-                aria-pressed={characterMode === '3d-video'}
-                title="Watch Pip's live 3D animation video"
-              >
-                <Sparkles size={15} />
-                <span>Live 3D Video</span>
               </button>
 
               <button
@@ -205,10 +191,9 @@ export default function Hero({ onTriggerEasterEgg, onReplayIntro, isNight = true
             </div>
           </div>
 
-          {/* 3D WebGL / Live Video Three.js Model View */}
-          {characterMode === '3d-model' || characterMode === '3d-video' ? (
+          {/* 3D WebGL Continuous Spin Model View */}
+          {characterMode === '3d' ? (
             <ThreePipCharacter
-              viewMode={characterMode === '3d-video' ? 'video' : 'model'}
               isNight={isNight}
               onPipTickle={handlePipClick}
             />
