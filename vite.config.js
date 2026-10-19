@@ -195,5 +195,20 @@ export default defineConfig({
   plugins: [react(), dreamBackendPlugin()],
   server: {
     port: 5173
-  }
+  },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('three')) {
+            return 'three';
+          }
+          if (id.includes('node_modules')) {
+            return 'vendor';
+          }
+        },
+      },
+    },
+    chunkSizeWarningLimit: 800,
+  },
 })

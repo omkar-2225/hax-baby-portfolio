@@ -1,5 +1,35 @@
 [
   {
+    "id": "wish-1792401152382-322p",
+    "name": "Agent 007",
+    "message": "May Pip's lullabies bring sweet dreams to all sleepy engineers!",
+    "sticker": "🌟",
+    "time": "Just now",
+    "timestamp": 1792401152382,
+    "tag": "Verified Dreamer",
+    "loves": 0
+  },
+  {
+    "id": "wish-1792398593484-ayw5",
+    "name": "haX Judge",
+    "message": "Tier 3 Legendary unlocked!",
+    "sticker": "crown",
+    "time": "Just now",
+    "timestamp": 1792398593484,
+    "tag": "Midnight Friend",
+    "loves": 1
+  },
+  {
+    "id": "wish-1792398577370-rkjy",
+    "name": "haX Judge",
+    "message": "Tier 3 Legendary unlocked!",
+    "sticker": "👑",
+    "time": "Just now",
+    "timestamp": 1792398577370,
+    "tag": "Midnight Friend",
+    "loves": 1
+  },
+  {
     "id": "wish-1",
     "name": "Barnaby Bear",
     "sticker": "🐻",
@@ -7,7 +37,7 @@
     "time": "2 hours ago",
     "timestamp": 1792390798748,
     "tag": "Verified Dreamer",
-    "loves": 14
+    "loves": 15
   },
   {
     "id": "wish-2",
@@ -17,7 +47,7 @@
     "time": "5 hours ago",
     "timestamp": 1792379998748,
     "tag": "Midnight Neighbor",
-    "loves": 9
+    "loves": 10
   },
   {
     "id": "wish-3",
@@ -27,6 +57,6 @@
     "time": "Yesterday",
     "timestamp": 1792311598748,
     "tag": "Cloud Hopper",
-    "loves": 21
+    "loves": 22
   }
 ]
