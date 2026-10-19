@@ -16,6 +16,9 @@ export default function Footer({ onTriggerEasterEgg }) {
                 src="/pip_avatar_cloud.png"
                 alt="Pip miniature icon"
                 className="footer-pip-icon"
+                width="34"
+                height="41"
+                style={{ objectFit: 'contain' }}
               />
               <span className="footer-brand-title">haX<span className="brand-dot">.baby</span></span>
             </div>

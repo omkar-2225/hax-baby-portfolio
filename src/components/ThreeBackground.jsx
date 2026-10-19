@@ -147,12 +147,32 @@ export default function ThreeBackground({ isNight = true }) {
 
     window.addEventListener('resize', handleResize);
 
-    // 6. Animation loop
+    // 6. Animation loop (Phase 3: pauses when offscreen/hidden & respects prefers-reduced-motion)
     let animId;
     const startTime = performance.now();
+    const prefersReducedMotion =
+      typeof window !== 'undefined' &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    if (prefersReducedMotion) {
+      renderer.render(scene, camera);
+      return () => {
+        window.removeEventListener('mousemove', handleMouseMove);
+        window.removeEventListener('resize', handleResize);
+        if (container && renderer.domElement) {
+          container.removeChild(renderer.domElement);
+        }
+        renderer.dispose();
+      };
+    }
 
     const animate = () => {
       animId = requestAnimationFrame(animate);
+
+      if (typeof document !== 'undefined' && document.hidden) {
+        return;
+      }
+
       const elapsedTime = (performance.now() - startTime) * 0.001;
 
       // Smooth camera lerp for gentle 3D depth

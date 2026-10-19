@@ -58,9 +58,6 @@ function dreamBackendPlugin() {
       fs.writeFileSync(odometerFile, JSON.stringify({ count: 1256, lastUpdated: Date.now() }, null, 2), 'utf-8')
     }
   }
-
-  return {
-    name: 'dream-backend-api',
   function attachMiddleware(server) {
     ensureData()
 
@@ -206,6 +203,7 @@ export default defineConfig({
     port: 5173
   },
   build: {
+    sourcemap: true,
     rollupOptions: {
       output: {
         manualChunks(id) {
